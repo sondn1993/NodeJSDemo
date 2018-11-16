@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="../css/bootstrap.min.css"/>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous"/>
+    <style>
+        body{
+            width: 900px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <table class="table table-striped" id="usersTable">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">First</th>
+                <th scope="col">Last</th>
+                <th scope="col">Username</th>
+                <th scope="col">Email</th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tr>
+                <th scope="col"></th>
+                <th scope="col"><input class="filter" value="" id="txtFirst"/></th>
+                <th scope="col"><input class="filter" value="" id="txtLast"/></th>
+                <th scope="col"><input class="filter" value="" id="txtUsername"/></th>
+                <th scope="col"><input class="filter" value="" id="txtEmail"/></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <ul class="pagination" id="pagination">
+    </ul>
+
+    <script type="text/javascript">
+        var url = 'http://localhost:3000/users/';
+        $(function() {
+            loadTable(1, "", "","","");
+        });
+
+        $('input.filter').on('input',function(e){
+            var firstName = $('#txtFirst').val().trim();
+            var lastName = $('#txtLast').val().trim();
+            var userName = $('#txtUsername').val().trim();
+            var email = $('#txtEmail').val().trim();
+            loadTable(1, firstName, lastName, userName, email);
+        });
+
+        function loadTable(page, firstName, lastName, userName, email){
+            $.ajax({
+                type: 'GET',
+                url: url + page + '/' + firstName + '/' + lastName + '/' + userName + '/' + email,
+                dataType: 'json',
+                success: function(data, statusText, xhr) {
+                    var list = data.list;
+                    var html = '';
+                    list.forEach(function(element, index) {
+                        var curIdx =index + (page - 1)*10 + 1;
+                        html = html + '<tr scope="row"><td>' + curIdx + '</td>'
+                            + '<td>' + element.firstName + '</td>'
+                            + '<td>' + element.lastName + '</td>'
+                            + '<td>' + element.username + '</td>'
+                            + '<td>' + element.email + '</td>'
+                            + '<td><button onclick="editUser(\''+ element.username +'\');"><i class="far fa-edit"></i></button></td>'
+                            + '<td><button onclick="deleteUser(\''+ element.username +'\');"><i class="far fa-trash-alt"></i></button></td></tr>';
+                    });
+                    $('#usersTable tbody').html(html);
+
+                    html = '';
+                    var size = data.size;
+                    //alert(size);
+                    for(i = 1; i <= size; i++){
+                        if(i == page){
+                            html = html + '<li class="active"><a href="#">' + i + '</a></li>';
+                        }else{
+                            html = html + '<li><a href="#">' + i + '</a></li>';
+                        }
+                    }
+                    $('#pagination').html(html);
+                },
+                error: function (error, statusText, xhr) {
+                    //alert("");
+                }
+            });
+        }
+        $('#pagination').on('click', 'li', function() {
+            $('#pagination li.active').removeClass('active');
+            $(this).addClass('active');
+            var page = $(this).text();
+            var firstName = $('#txtFirst').val().trim();
+            var lastName = $('#txtLast').val().trim();
+            var userName = $('#txtUsername').val().trim();
+            var email = $('#txtEmail').val().trim();
+            loadTable(page, firstName, lastName, userName, email);
+        });
+
+        function editUser(username){
+            alert(username);
+        }
+
+        function deleteUser(username){
+            alert(username);
+        }
+    </script>
+</body>
+</html>
