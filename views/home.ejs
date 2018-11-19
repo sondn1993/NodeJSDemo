@@ -15,6 +15,10 @@
         #pagination{
             margin-left:20%; 
         }
+
+        #tableInfo{
+            margin-left:20%; 
+        }
     </style>
 </head>
 <body>
@@ -43,46 +47,47 @@
         <tbody>
         </tbody>
     </table>
+    <div id="tableInfo"></div>
     <ul class="pagination" id="pagination">
     </ul>
 
     <div class="modal" tabindex="-1" role="dialog" id="modalEdit">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
-            <div class="modal-header" style="height: 45px;">
-                <h5 class="modal-title" style="width:95%; float: left;" id="modalHeader">Edit info of <span id="txtSelectedUsername" style="color: red"></span> </h5>
-                <button type="button" style="width:2%; float: right;" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="editForm">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="txtEditFirst">First</label>
-                            <input id="txtEditFirst" name="firstName" class="form-control" />
+                <div class="modal-header" style="height: 45px;">
+                    <h5 class="modal-title" style="width:95%; float: left;" id="modalHeader">Edit info of <span id="txtSelectedUsername" style="color: red"></span> </h5>
+                    <button type="button" style="width:2%; float: right;" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="txtEditFirst">First</label>
+                                <input id="txtEditFirst" name="firstName" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="txtEditLast">Last</label>
+                                <input id="txtEditLast" name="lastName" class="form-control"/>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="txtEditLast">Last</label>
-                            <input id="txtEditLast" name="lastName" class="form-control"/>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="txtEditEmail">Email</label>
+                                <input id="txtEditEmail" name="email" class="form-control" />
+                            </div>
+                            <div class="col-md-6" id="divUsername">
+                                <label for="txtEditUsername">Username</label>
+                                <input id="txtEditUsername" name="userName" class="form-control" />
+                            </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="txtEditEmail">Email</label>
-                            <input id="txtEditEmail" name="email" class="form-control" />
-                        </div>
-                        <div class="col-md-6" id="divUsername">
-                            <label for="txtEditUsername">Username</label>
-                            <input id="txtEditUsername" name="userName" class="form-control" />
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="btnSave">Save changes</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnSave">Save changes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -90,16 +95,16 @@
     <div class="modal" tabindex="-1" role="dialog" id="modalDelete">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
-                <div class="modal-body" style="height: 45px;">
-                    <h5 class="modal-title" style="width:95%; float: left;">Are you sure to delete user :  <span id="txtDeletedUsername" style="color: red"></span> ?</h5>
-                    <button type="button" style="width:2%; float: right;" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="btnDelete">Yes</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-                </div>
+                    <div class="modal-body" style="height: 45px;">
+                        <h5 class="modal-title" style="width:95%; float: left;">Are you sure to delete user :  <span id="txtDeletedUsername" style="color: red"></span> ?</h5>
+                        <button type="button" style="width:2%; float: right;" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnDelete">Yes</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -137,6 +142,7 @@
                             + '<td><button onclick="deleteUser(\''+ element.username +'\');"><i class="far fa-trash-alt"></i></button></td></tr>';
                     });
                     $('#usersTable tbody').html(html);
+                    $('#tableInfo').html('there is ' + data.total + ' items in this table');
 
                     html = '<li id="btnPrevious"><a href="#">&laquo;</a></li>';
                     var size = data.size;
@@ -165,6 +171,7 @@
             });
         }
         $('#pagination').on('click', 'li', function() {
+            event.preventDefault();
             var page;
             if($(this).attr('id') == 'btnPrevious' && $('#pagination li.active').text() != 1){
                 page =  parseInt($('#pagination li.active').text()) - 1;

@@ -67,7 +67,7 @@ var appRouter = function (app) {
             for (i = (page-1) * itemPerPage; i < page * itemPerPage && i< temp.length; i++) {
                 list.push(temp[i]);
             }
-            res.status(200).send({list : list, size : Math.ceil(temp.length/itemPerPage)});
+            res.status(200).send({list : list, size : Math.ceil(temp.length/itemPerPage), total : temp.length});
         }
     });
 
