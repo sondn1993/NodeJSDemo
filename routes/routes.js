@@ -10,7 +10,7 @@ var appRouter = function (app) {
     var email;
     var users = [];
 
-    for (i = 0; i <= 105; i++) {
+    for (i = 0; i <= 25; i++) {
         users.push({
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
@@ -25,7 +25,7 @@ var appRouter = function (app) {
 
     app.get("/user/:username", function (req, res) {
         var check = false;
-        var username = request.params.username;
+        var username = req.params.username;
         users.forEach(function(ele, index) {
             if(ele.username == username){
                 check = true;
@@ -49,10 +49,10 @@ var appRouter = function (app) {
         var temp = [];
         
         users.forEach(function(ele, index) {
-            if(ele.firstName.includes(firstName) 
-                && ele.lastName.includes(lastName)
-                && ele.username.includes(userName)
-                && ele.email.includes(email)){
+            if(ele.firstName.toLowerCase().includes(firstName.toLowerCase()) 
+                && ele.lastName.toLowerCase().includes(lastName.toLowerCase())
+                && ele.username.toLowerCase().includes(userName.toLowerCase())
+                && ele.email.toLowerCase().includes(email.toLowerCase())){
                     temp.push(ele);
             }
         });
@@ -68,6 +68,61 @@ var appRouter = function (app) {
                 list.push(temp[i]);
             }
             res.status(200).send({list : list, size : Math.ceil(temp.length/itemPerPage)});
+        }
+    });
+
+    app.post("/adduser", function (req, res) {
+        //console.log(req.body);
+        var check = false;
+        users.forEach(function(ele, index) {
+            if(ele.username == req.body.userName){
+                check = true;
+                res.status(500).send(users);
+                return;
+            }
+        });
+        if(!check){
+            users.push({
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                username: req.body.userName,
+                email: req.body.email
+            });
+            res.status(200).send(users);
+        }
+    });
+
+    app.post("/edituser", function (req, res) {
+        //console.log(req.body);
+        var check = false;
+        users.forEach(function(ele, index) {
+            if(ele.username == req.body.userName){
+                check = true;
+                users[index].firstName = req.body.firstName;
+                users[index].lastName = req.body.lastName;
+                users[index].email = req.body.email;
+                res.status(200).send(users);
+                return;
+            }
+        });
+        if(!check){
+            res.status(500).send('user not found');
+        }
+    });
+
+    app.post("/deleteuser", function (req, res) {
+        //console.log(req.body);
+        var check = false;
+        users.forEach(function(ele, index) {
+            if(ele.username == req.body.userName){
+                check = true;
+                users.splice(index, 1);
+                res.status(200).send(users);
+                return;
+            }
+        });
+        if(!check){
+            res.status(500).send('user not found');
         }
     });
 }

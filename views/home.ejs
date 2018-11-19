@@ -2,16 +2,23 @@
 <html>
 <head>
     <link rel="stylesheet" href="../css/bootstrap.min.css"/>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous"/>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>   
     <style>
-        body{
-            width: 900px;
-            margin: 0 auto;
+        #usersTable{
+            width:60%; 
+            margin-left:20%; 
+            margin-right:20%;
+        }
+
+        #pagination{
+            margin-left:20%; 
         }
     </style>
 </head>
 <body>
+    
     <table class="table table-striped" id="usersTable">
         <thead>
             <tr>
@@ -21,7 +28,7 @@
                 <th scope="col">Username</th>
                 <th scope="col">Email</th>
                 <th></th>
-                <th></th>
+                <th><button id="btnAdd"><i class="fas fa-plus"></i></button></th>
             </tr>
             <tr>
                 <th scope="col"></th>
@@ -39,8 +46,65 @@
     <ul class="pagination" id="pagination">
     </ul>
 
+    <div class="modal" tabindex="-1" role="dialog" id="modalEdit">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header" style="height: 45px;">
+                <h5 class="modal-title" style="width:95%; float: left;" id="modalHeader">Edit info of <span id="txtSelectedUsername" style="color: red"></span> </h5>
+                <button type="button" style="width:2%; float: right;" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="txtEditFirst">First</label>
+                            <input id="txtEditFirst" name="firstName" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="txtEditLast">Last</label>
+                            <input id="txtEditLast" name="lastName" class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="txtEditEmail">Email</label>
+                            <input id="txtEditEmail" name="email" class="form-control" />
+                        </div>
+                        <div class="col-md-6" id="divUsername">
+                            <label for="txtEditUsername">Username</label>
+                            <input id="txtEditUsername" name="userName" class="form-control" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSave">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" tabindex="-1" role="dialog" id="modalDelete">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-body" style="height: 45px;">
+                    <h5 class="modal-title" style="width:95%; float: left;">Are you sure to delete user :  <span id="txtDeletedUsername" style="color: red"></span> ?</h5>
+                    <button type="button" style="width:2%; float: right;" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnDelete">Yes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
     <script type="text/javascript">
-        var url = 'http://localhost:3000/users/';
         $(function() {
             loadTable(1, "", "","","");
         });
@@ -54,6 +118,7 @@
         });
 
         function loadTable(page, firstName, lastName, userName, email){
+            var url = 'http://localhost:3000/users/';
             $.ajax({
                 type: 'GET',
                 url: url + page + '/' + firstName + '/' + lastName + '/' + userName + '/' + email,
@@ -73,16 +138,25 @@
                     });
                     $('#usersTable tbody').html(html);
 
-                    html = '';
+                    html = '<li id="btnPrevious"><a href="#">&laquo;</a></li>';
                     var size = data.size;
                     //alert(size);
                     for(i = 1; i <= size; i++){
                         if(i == page){
-                            html = html + '<li class="active"><a href="#">' + i + '</a></li>';
+                            if(i == size){
+                                html = html + '<li class="active '+ i + '" id="lastPage"><a href="#">' + i + '</a></li>';
+                            }else{
+                                html = html + '<li class="active '+ i + '"><a href="#">' + i + '</a></li>';
+                            }
                         }else{
-                            html = html + '<li><a href="#">' + i + '</a></li>';
+                            if(i == size){
+                                html = html + '<li class="'+ i + '" id="lastPage"><a href="#">' + i + '</a></li>';
+                            }else{
+                                html = html + '<li class="'+ i + '"><a href="#">' + i + '</a></li>';
+                            }
                         }
                     }
+                    html = html + '<li id="btnNext"><a href="#">&raquo;</a></li>';
                     $('#pagination').html(html);
                 },
                 error: function (error, statusText, xhr) {
@@ -91,9 +165,27 @@
             });
         }
         $('#pagination').on('click', 'li', function() {
-            $('#pagination li.active').removeClass('active');
-            $(this).addClass('active');
-            var page = $(this).text();
+            var page;
+            if($(this).attr('id') == 'btnPrevious' && $('#pagination li.active').text() != 1){
+                page =  parseInt($('#pagination li.active').text()) - 1;
+                var element = '#pagination li.' + page;
+                $('#pagination li.active').removeClass('active');
+                $(element).addClass('active');
+            }else if($(this).attr('id') == 'btnPrevious' && $('#pagination li.active').text() == 1){
+                return;
+            }else if($(this).attr('id') == 'btnNext' && $('#pagination li.active').text() != $('#lastPage').text()){
+                page =  parseInt($('#pagination li.active').text()) + 1;
+                var element = '#pagination li.' + page;
+                $('#pagination li.active').removeClass('active');
+                $(element).addClass('active');
+            }else if($(this).attr('id') == 'btnNext' && $('#pagination li.active').text() == $('#lastPage').text()){
+                return;
+            }else {
+                page = $(this).text();
+                $('#pagination li.active').removeClass('active');
+                $(this).addClass('active');
+            }
+            
             var firstName = $('#txtFirst').val().trim();
             var lastName = $('#txtLast').val().trim();
             var userName = $('#txtUsername').val().trim();
@@ -101,13 +193,103 @@
             loadTable(page, firstName, lastName, userName, email);
         });
 
+        $('#btnAdd').click(function(){
+            $('#txtEditFirst').val('');
+            $('#txtEditLast').val('');
+            $('#txtEditEmail').val('');
+            $('#txtEditUsername').val('');
+            document.getElementById('divUsername').style.visibility = "visible";
+            $('#modalHeader').html('Add a new user');
+            $('#modalEdit').modal('show');
+        });
+
         function editUser(username){
-            alert(username);
+            var url = 'http://localhost:3000/user/' + username;
+            $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'json',
+                success: function(data, statusText, xhr) {
+                    $('#txtEditFirst').val(data.firstName);
+                    $('#txtEditLast').val(data.lastName);
+                    $('#txtEditEmail').val(data.email);
+                    document.getElementById('divUsername').style.visibility = "hidden";
+                    $('#modalHeader').html('Edit info of <span id="txtSelectedUsername" style="color: red">' + data.username + '</span> ');
+                    $('#modalEdit').modal('show');
+                },
+                error: function (error, statusText, xhr) {
+                    alert("user not found");
+                }
+            });
         }
+        
+        $('#btnSave').click(function(){
+            if($('#divUsername').css('visibility') == 'hidden'){
+                var url = 'http://localhost:3000/edituser';
+                var dataPost = {}; 
+                dataPost.userName =  document.getElementById('txtSelectedUsername').textContent;
+                dataPost.firstName = $('#txtEditFirst').val();
+                dataPost.lastName = $('#txtEditLast').val();
+                dataPost.email = $('#txtEditEmail').val();
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: JSON.stringify(dataPost),
+                    contentType: 'application/json',
+                    success: function(data, statusText, xhr) {
+                        $('#modalEdit').modal('hide');
+                        loadTable(1, "", "","","");
+                    },
+                    error: function (error, statusText, xhr) {
+                        alert("failed to edit!!!");
+                    }
+                });
+            }else{
+                var url = 'http://localhost:3000/adduser';
+                var dataPost = {}; 
+                dataPost.userName = $('#txtEditUsername').val();
+                dataPost.firstName = $('#txtEditFirst').val();
+                dataPost.lastName = $('#txtEditLast').val();
+                dataPost.email = $('#txtEditEmail').val();
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: JSON.stringify(dataPost),
+                    contentType: 'application/json',
+                    success: function(data, statusText, xhr) {
+                        $('#modalEdit').modal('hide');
+                        loadTable(1, "", "","","");
+                    },
+                    error: function (error, statusText, xhr) {
+                        alert("Duplicate username!!!");
+                    }
+                });
+            }
+        });
 
         function deleteUser(username){
-            alert(username);
+            document.getElementById('txtDeletedUsername').innerHTML = username;
+            $('#modalDelete').modal('show');
         }
+
+        $('#btnDelete').click(function(){
+            var url = 'http://localhost:3000/deleteuser';
+            var dataPost = {}; 
+            dataPost.userName =  document.getElementById('txtDeletedUsername').textContent;
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: JSON.stringify(dataPost),
+                contentType: 'application/json',
+                success: function(data, statusText, xhr) {
+                    loadTable(1, "", "","","");
+                },
+                error: function (error, statusText, xhr) {
+                    alert("failed to delete!!!");
+                }
+            });
+        });
     </script>
 </body>
 </html>
